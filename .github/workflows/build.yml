@@ -1,0 +1,57 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+        
+      - name: Install Cordova
+        run: npm install -g cordova --no-fund --no-audit
+        
+      - name: Prepare Project
+        run: |
+          mkdir -p www
+          if [ -f source.zip ]; then
+            unzip -q source.zip -d www/
+          elif ls *.html 1> /dev/null 2>&1; then
+            mv *.html www/index.html
+          else
+            echo "<html><body>Redirecting...</body></html>" > www/index.html
+          fi
+          if [ -f icon.png ]; then
+            mkdir -p res/icon
+            mv icon.png res/icon/icon.png
+          fi
+          
+      - name: Build APK
+        env:
+          CI: true
+          CORDOVA_TELEMETRY_RELEASE_OPT_OUT: true
+        run: |
+          npm install --no-fund --no-audit
+          cordova platform add android --verbose
+          cordova build android --verbose
+          
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 1
