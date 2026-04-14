@@ -1,0 +1,13 @@
+{
+  "name": "android-app-build",
+  "version": "1.0.0",
+  "displayName": "VERIFYAPKKIPAS",
+  "cordova": {
+    "platforms": [
+      "android"
+    ]
+  },
+  "dependencies": {
+    "cordova-android": "^13.0.0"
+  }
+}
